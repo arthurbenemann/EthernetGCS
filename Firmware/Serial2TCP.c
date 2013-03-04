@@ -56,6 +56,8 @@ void Serial2TCPTask(void) {
     sendRxDataToTcpSockets(MySocket1,MySocket2);
 
     unshadowFifoPointers();
+
+    LED0 =LED_OFF;  // Blinks led durring the duration of this routine
 }
 
 /*
