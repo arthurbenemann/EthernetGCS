@@ -35,6 +35,7 @@
 
 
 //UART PPS pins
+#define PIC_TX_OD (_ODF5)   // PIC OpenDrain for TX pin
 #define PIC_TX  (_RP17R)    // PIC output
 #define PIC_RX  (10)        // PIC input
 // Select which UART to use.
