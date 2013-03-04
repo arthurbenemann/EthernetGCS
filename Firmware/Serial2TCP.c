@@ -18,9 +18,10 @@ static BYTE *TXHeadPtrShadow, *TXTailPtrShadow;
 static TCP_SOCKET MySocket1 = INVALID_SOCKET;
 static TCP_SOCKET MySocket2 = INVALID_SOCKET;
 
-void processTcpSocket(TCP_SOCKET *MySocket);
 void receiveTcpDataToTxFifo(TCP_SOCKET MySocket);
 void sendRxDataToTcp(TCP_SOCKET MySocket);
+void shadowFifoPointers();
+void unshadowFifoPointers();
 void initTCPSockets(TCP_SOCKET *MySocket);
 void initUART();
 
@@ -28,64 +29,68 @@ void initUART();
  * Exchange data between TCP and the two Serial fifo buffers
  */
 void Serial2TCPTask(void) {
+
     // Make sure to clear UART errors so they don't block all future operations
     if (U2STAbits.OERR)
         U2STAbits.OERR = 0;
-    processTcpSocket(&MySocket1);
-    processTcpSocket(&MySocket2);
+
+    // Reset all buffers if the connection was lost
+    if (TCPWasReset(MySocket1)) {};
+    if (TCPWasReset(MySocket2)) {};
+
+    int isSocket1Connected = TCPIsConnected(MySocket1);
+    int isSocket2Connected = TCPIsConnected(MySocket2);
+
+    // Don't do anything if nobody is connected to us
+    if ((!isSocket1Connected)&(!isSocket2Connected)) {
+        LED0 = LED_OFF;
+        return;
+    } else if ((isSocket1Connected) | (isSocket2Connected)) {
+        LED0 = LED_ON;
+    }
+
+    shadowFifoPointers();
+
+    receiveTcpDataToTxFifo(MySocket1);
+    sendRxDataToTcp(MySocket1);
+
+    receiveTcpDataToTxFifo(MySocket2);
+    sendRxDataToTcp(MySocket2);
+
+    unshadowFifoPointers();
 }
 
-void processTcpSocket(TCP_SOCKET *MySocket){
-            // Reset all buffers if the connection was lost
-            if (TCPWasReset(*MySocket)) {
-                // Optionally discard anything in the UART FIFOs
-                //RXHeadPtr = vUARTRXFIFO;
-                //RXTailPtr = vUARTRXFIFO;
-                //TXHeadPtr = vUARTTXFIFO;
-                //TXTailPtr = vUARTTXFIFO;
-            }
+/*
+ * Write local shadowed FIFO pointers into the volatile FIFO pointers.
+ */
+void unshadowFifoPointers() {
+    IEC1bits.U2RXIE = 0;
+    IEC1bits.U2TXIE = 0;
 
-            // Don't do anything if nobody is connected to us
-            if (!TCPIsConnected(*MySocket)) {
-                LED0 = LED_OFF;
-                return;
-            } else {
-                LED0 = LED_ON;
-            }
+    RXTailPtr = (volatile BYTE*)RXTailPtrShadow;
+    TXHeadPtr = (volatile BYTE*)TXHeadPtrShadow;
 
+    IEC1bits.U2RXIE = 1;
+    if (TXHeadPtrShadow != TXTailPtrShadow)
+        IEC1bits.U2TXIE = 1;
+}
 
+/* Read FIFO pointers into a local shadow copy.  Some pointers are volatile
+ * (modified in the ISR), so we must do this safely by disabling interrupts
+ */
+void shadowFifoPointers() {
+    RXTailPtrShadow = (BYTE*) RXTailPtr;
+    TXHeadPtrShadow = (BYTE*) TXHeadPtr;
 
+    IEC1bits.U2RXIE = 0;
+    IEC1bits.U2TXIE = 0;
 
+    RXHeadPtrShadow = (BYTE*) RXHeadPtr;
+    TXTailPtrShadow = (BYTE*) TXTailPtr;
 
-            // Read FIFO pointers into a local shadow copy.  Some pointers are volatile
-            // (modified in the ISR), so we must do this safely by disabling interrupts
-            RXTailPtrShadow = (BYTE*) RXTailPtr;
-            TXHeadPtrShadow = (BYTE*) TXHeadPtr;
-
-            IEC1bits.U2RXIE = 0;
-            IEC1bits.U2TXIE = 0;
-
-            RXHeadPtrShadow = (BYTE*) RXHeadPtr;
-            TXTailPtrShadow = (BYTE*) TXTailPtr;
-
-            IEC1bits.U2RXIE = 1;
-            if (TXHeadPtrShadow != TXTailPtrShadow)
-                IEC1bits.U2TXIE = 1;
-
-
-            receiveTcpDataToTxFifo(*MySocket);
-            sendRxDataToTcp(*MySocket);
-
-            // Write local shadowed FIFO pointers into the volatile FIFO pointers.
-            IEC1bits.U2RXIE = 0;
-            IEC1bits.U2TXIE = 0;
-
-            RXTailPtr = (volatile BYTE*)RXTailPtrShadow;
-            TXHeadPtr = (volatile BYTE*)TXHeadPtrShadow;
-
-            IEC1bits.U2RXIE = 1;
-            if (TXHeadPtrShadow != TXTailPtrShadow)
-                IEC1bits.U2TXIE = 1;
+    IEC1bits.U2RXIE = 1;
+    if (TXHeadPtrShadow != TXTailPtrShadow)
+        IEC1bits.U2TXIE = 1;
 }
 
 /**
