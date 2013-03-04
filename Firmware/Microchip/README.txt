@@ -1,0 +1,1 @@
+The folders "Include" and TCPIP Stack" from "Microchip Application Libraries v2012/10/15" should be copied here to compile the code

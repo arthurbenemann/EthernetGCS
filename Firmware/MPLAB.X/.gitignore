@@ -1,0 +1,9 @@
+# NetBeans specific #
+nbproject/private/*.*
+nbproject/Makefile-genesis.properties
+build/
+nbbuild/
+dist/
+nbdist/
+nbactions.xml
+nb-configuration.xml
