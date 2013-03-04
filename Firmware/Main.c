@@ -30,26 +30,25 @@ int main(void) {
 }
 
 /**
- *   This routine initializes the hardware.  It is a generic initialization
- *   routine for many of the Microchip development boards, using definitions
- *   in HardwareProfile.h to determine specific initialization.
+ *   This routine initializes the hardware.
  */
 static void InitializeBoard(void) {
     CLKDIVbits.RCDIV = 0; // Set 1:1 8MHz FRC postscalar
     __builtin_write_OSCCONL(OSCCON & 0xBF); // Unlock PPS
 
+    LED0 = LED_OFF;
+    LED0_TRIS = 0;
+
     // Configure ENC28J60 SPI1 PPS pins
     ENC_CS_IO = 1;
     ENC_CS_TRIS = 0;
-
-    _RP19R = 8; // Assign RP19 to SCK1 (output)
-    _RP26R = 7; // Assign RP26 to SDO1 (output)
-    _SDI1R = 21; // Assign RP21 to SDI1 (input)
-
+    ENC_SCK = SCK1;
+    ENC_SDI = SDO1;
+    _SDI1R = ENC_SDO;
 
     // Configure UART2 PPS pins
-    _U2RXR = 10; // Assign RF4/RP10 to U2RX (input)
-    _RP17R = 5; // Assign RF5/RP17 to U2TX (output)
+    _U2RXR = PIC_RX;
+    PIC_TX = UART2; 
 
 
     __builtin_write_OSCCONL(OSCCON | 0x40); // Lock PPS

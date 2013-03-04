@@ -83,12 +83,11 @@ void Serial2TCPTask(void) {
             }
 
             // Don't do anything if nobody is connected to us
-            _TRISD1 = 0;
             if (!TCPIsConnected(MySocket)) {
-                _RD1 = 0;
+                LED0 = LED_OFF;
                 break;
             } else {
-                _RD1 = 1;
+                LED0 = LED_ON;
             }
 
 
