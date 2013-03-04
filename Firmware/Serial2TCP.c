@@ -19,7 +19,7 @@ static TCP_SOCKET MySocket1 = INVALID_SOCKET;
 static TCP_SOCKET MySocket2 = INVALID_SOCKET;
 
 void receiveTcpDataToTxFifo(TCP_SOCKET MySocket);
-void sendRxDataToTcp(TCP_SOCKET MySocket);
+void sendRxDataToTcpSockets(TCP_SOCKET MySocket1,TCP_SOCKET MySocket2);
 void shadowFifoPointers();
 void unshadowFifoPointers();
 void initTCPSockets(TCP_SOCKET *MySocket);
@@ -52,10 +52,8 @@ void Serial2TCPTask(void) {
     shadowFifoPointers();
 
     receiveTcpDataToTxFifo(MySocket1);
-    sendRxDataToTcp(MySocket1);
-
     receiveTcpDataToTxFifo(MySocket2);
-    sendRxDataToTcp(MySocket2);
+    sendRxDataToTcpSockets(MySocket1,MySocket2);
 
     unshadowFifoPointers();
 }
@@ -94,7 +92,7 @@ void shadowFifoPointers() {
 }
 
 /**
- * // Transfer received TCP data into the UART TX FIFO for future transmission (in the ISR)
+ * Transfer received TCP data into the UART TX FIFO for future transmission (in the ISR)
  */
 void receiveTcpDataToTxFifo(TCP_SOCKET MySocket) {
     WORD wMaxPut, wMaxGet, w;
@@ -122,14 +120,20 @@ void receiveTcpDataToTxFifo(TCP_SOCKET MySocket) {
 /*
  *  Transmit pending data that has been placed into the UART RX FIFO (in the ISR)
  */
-void sendRxDataToTcp(TCP_SOCKET MySocket) {
-    WORD wMaxPut, wMaxGet, w;
-    wMaxPut = TCPIsPutReady(MySocket); // Get TCP TX FIFO space
+void sendRxDataToTcpSockets(TCP_SOCKET MySocket1,TCP_SOCKET MySocket2) {
+    WORD wMaxPut,wMaxPut1,wMaxPut2, wMaxGet, w;
+
+    wMaxPut1 = TCPIsPutReady(MySocket1); // Get the minimun TCP TX FIFO space
+    wMaxPut2 = TCPIsPutReady(MySocket2); 
+    wMaxPut = (wMaxPut1>wMaxPut2)?wMaxPut1:wMaxPut2;
+
     wMaxGet = RXHeadPtrShadow - RXTailPtrShadow; // Get UART RX FIFO byte count
     if (RXHeadPtrShadow < RXTailPtrShadow)
         wMaxGet += sizeof (vUARTRXFIFO);
+    
     if (wMaxPut > wMaxGet) // Calculate the lesser of the two
         wMaxPut = wMaxGet;
+
     if (wMaxPut) // See if we can transfer anything
     {
         // Transfer the data over.  Note that a two part put
@@ -137,11 +141,13 @@ void sendRxDataToTcp(TCP_SOCKET MySocket) {
         // end to start address.
         w = vUARTRXFIFO + sizeof (vUARTRXFIFO) - RXTailPtrShadow;
         if (wMaxPut >= w) {
-            TCPPutArray(MySocket, RXTailPtrShadow, w);
+            TCPPutArray(MySocket1, RXTailPtrShadow, w);
+            TCPPutArray(MySocket2, RXTailPtrShadow, w);
             RXTailPtrShadow = vUARTRXFIFO;
             wMaxPut -= w;
         }
-        TCPPutArray(MySocket, RXTailPtrShadow, wMaxPut);
+        TCPPutArray(MySocket1, RXTailPtrShadow, wMaxPut);
+        TCPPutArray(MySocket2, RXTailPtrShadow, wMaxPut);
         RXTailPtrShadow += wMaxPut;
 
         // No flush.  The stack will automatically flush and do
