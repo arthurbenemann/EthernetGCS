@@ -15,39 +15,29 @@ static volatile BYTE *TXHeadPtr = vUARTTXFIFO, *TXTailPtr = vUARTTXFIFO;
 static BYTE *RXHeadPtrShadow, *RXTailPtrShadow;
 static BYTE *TXHeadPtrShadow, *TXTailPtrShadow;
 
-static enum _BridgeState {
-    SM_HOME = 0,
-    SM_SOCKET_OBTAINED
-} BridgeState = SM_HOME;
-static TCP_SOCKET MySocket = INVALID_SOCKET;
+static TCP_SOCKET MySocket1 = INVALID_SOCKET;
+static TCP_SOCKET MySocket2 = INVALID_SOCKET;
 
+void processTcpSocket(TCP_SOCKET *MySocket);
 void receiveTcpDataToTxFifo(TCP_SOCKET MySocket);
 void sendRxDataToTcp(TCP_SOCKET MySocket);
+void initTCPSockets(TCP_SOCKET *MySocket);
+void initUART();
 
 /**
  * Exchange data between TCP and the two Serial fifo buffers
  */
 void Serial2TCPTask(void) {
-    switch (BridgeState) {
-        case SM_HOME:
-            MySocket = TCPOpen(0, TCP_OPEN_SERVER, Serial2TCP_PORT, TCP_PURPOSE_UART_2_TCP_BRIDGE);
+    // Make sure to clear UART errors so they don't block all future operations
+    if (U2STAbits.OERR)
+        U2STAbits.OERR = 0;
+    processTcpSocket(&MySocket1);
+    processTcpSocket(&MySocket2);
+}
 
-            // Abort operation if no TCP socket of type TCP_PURPOSE_UART_2_TCP_BRIDGE is available
-            // If this ever happens, you need to go add one to TCPIPConfig.h
-            if (MySocket == INVALID_SOCKET)
-                break;
-
-            // Eat the first TCPWasReset() response so we don't
-            // infinitely create and reset/destroy client mode sockets
-            TCPWasReset(MySocket);
-
-            // We have a socket now, advance to the next state
-            BridgeState = SM_SOCKET_OBTAINED;
-            break;
-
-        case SM_SOCKET_OBTAINED:
+void processTcpSocket(TCP_SOCKET *MySocket){
             // Reset all buffers if the connection was lost
-            if (TCPWasReset(MySocket)) {
+            if (TCPWasReset(*MySocket)) {
                 // Optionally discard anything in the UART FIFOs
                 //RXHeadPtr = vUARTRXFIFO;
                 //RXTailPtr = vUARTRXFIFO;
@@ -56,17 +46,15 @@ void Serial2TCPTask(void) {
             }
 
             // Don't do anything if nobody is connected to us
-            if (!TCPIsConnected(MySocket)) {
+            if (!TCPIsConnected(*MySocket)) {
                 LED0 = LED_OFF;
-                break;
+                return;
             } else {
                 LED0 = LED_ON;
             }
 
 
-            // Make sure to clear UART errors so they don't block all future operations
-            if (U2STAbits.OERR)
-                U2STAbits.OERR = 0;
+
 
 
             // Read FIFO pointers into a local shadow copy.  Some pointers are volatile
@@ -85,8 +73,8 @@ void Serial2TCPTask(void) {
                 IEC1bits.U2TXIE = 1;
 
 
-            receiveTcpDataToTxFifo(MySocket);
-            sendRxDataToTcp(MySocket);
+            receiveTcpDataToTxFifo(*MySocket);
+            sendRxDataToTcp(*MySocket);
 
             // Write local shadowed FIFO pointers into the volatile FIFO pointers.
             IEC1bits.U2RXIE = 0;
@@ -98,9 +86,6 @@ void Serial2TCPTask(void) {
             IEC1bits.U2RXIE = 1;
             if (TXHeadPtrShadow != TXTailPtrShadow)
                 IEC1bits.U2TXIE = 1;
-
-            break;
-    }
 }
 
 /**
@@ -207,8 +192,22 @@ void _ISR __attribute__((__no_auto_psv__)) _U2TXInterrupt(void) {
  * Sets up the UART peripheral for this application
  */
 void Serial2TCPInit(void) {
-    UMODE = 0x8000; // Set UARTEN.  Note: this must be done before setting UTXEN
+    initUART();
+    initTCPSockets(&MySocket1);
+    initTCPSockets(&MySocket2);
+    if((MySocket1 == INVALID_SOCKET)||(MySocket2 == INVALID_SOCKET))
+        while(1);   // Error when alocation the TCP sockets
+}
 
+void initTCPSockets(TCP_SOCKET *MySocket){
+    *MySocket = TCPOpen(0, TCP_OPEN_SERVER, Serial2TCP_PORT, TCP_PURPOSE_UART_2_TCP_BRIDGE);
+    // Eat the first TCPWasReset() response so we don't
+    // infinitely create and reset/destroy client mode sockets
+    TCPWasReset(*MySocket);
+}
+
+void initUART(){
+    UMODE = 0x8000; // Set UARTEN.  Note: this must be done before setting UTXEN
     USTA = 0x0400; // UTXEN set
 #define CLOSEST_UBRG_VALUE ((GetPeripheralClock()+8ul*BAUD_RATE)/16/BAUD_RATE-1)
 #define BAUD_ACTUAL (GetPeripheralClock()/16/(CLOSEST_UBRG_VALUE+1))
@@ -223,7 +222,5 @@ void Serial2TCPInit(void) {
 #endif
 
     UBRG = CLOSEST_UBRG_VALUE;
-
 }
-
 

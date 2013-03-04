@@ -138,6 +138,7 @@
 		} TCPSocketInitializer[] =
 		{			
 			{TCP_PURPOSE_UART_2_TCP_BRIDGE, TCP_ETH_RAM, 256, 256},
+                        {TCP_PURPOSE_UART_2_TCP_BRIDGE, TCP_ETH_RAM, 256, 256},
 			{TCP_PURPOSE_DEFAULT, TCP_ETH_RAM, 200, 200},
 		};
 		#define END_OF_TCP_CONFIGURATION
