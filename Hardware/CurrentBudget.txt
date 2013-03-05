@@ -1,0 +1,17 @@
+Maximum Operating Current
+---------------------------
+GPS module 	-	50 mA
+Hope RF		-	120 mA
+ENC28J60	-	250 mA
+PIC24		-	60 mA
+
+----------------------------
+Current on the uC Regurator:
+250 + 60 = 310mA
+
+Current on the RF Regurator:
+120 mA
+----------------------------
+
+Total Current:
+50 + 120 + 250 + 60 = 480mA
