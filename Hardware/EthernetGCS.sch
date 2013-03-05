@@ -6299,7 +6299,6 @@ Standard 3-pin 0.1" header. Use with straight break away headers (SKU : PRT-0011
 <part name="P+13" library="supply2" deviceset="V+" device=""/>
 <part name="GPS" library="con-jst2" deviceset="?M06B-SRSS-TB" device="S"/>
 <part name="GND44" library="supply1" deviceset="GND" device=""/>
-<part name="P+1" library="supply2" deviceset="V+" device=""/>
 <part name="IC1" library="microchip" deviceset="PIC24FJ64GA002_QFN" device="">
 <attribute name="MF" value=""/>
 <attribute name="MPN" value="PIC24FJ64GA002-E/ML"/>
@@ -6325,6 +6324,7 @@ Standard 3-pin 0.1" header. Use with straight break away headers (SKU : PRT-0011
 <part name="GND47" library="supply1" deviceset="GND" device=""/>
 <part name="SJ1" library="SparkFun" deviceset="SOLDERJUMPER_2WAY" device="T"/>
 <part name="GND48" library="supply1" deviceset="GND" device=""/>
+<part name="U$8" library="SparkFun" deviceset="5V" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -6512,9 +6512,6 @@ Standard 3-pin 0.1" header. Use with straight break away headers (SKU : PRT-0011
 <instance part="GPS" gate="-5" x="309.88" y="162.56"/>
 <instance part="GPS" gate="-6" x="309.88" y="160.02"/>
 <instance part="GND44" gate="1" x="304.8" y="154.94"/>
-<instance part="P+1" gate="1" x="302.26" y="172.72" smashed="yes">
-<attribute name="VALUE" x="304.038" y="175.006" size="1.778" layer="96"/>
-</instance>
 <instance part="IC1" gate="G$1" x="193.04" y="157.48" smashed="yes">
 <attribute name="NAME" x="167.64" y="181.61" size="1.778" layer="95" font="vector"/>
 <attribute name="VALUE" x="177.8" y="144.78" size="1.778" layer="96" font="vector"/>
@@ -6561,6 +6558,7 @@ Standard 3-pin 0.1" header. Use with straight break away headers (SKU : PRT-0011
 <attribute name="VALUE" x="281.94" y="103.505" size="1.778" layer="96" rot="R180"/>
 </instance>
 <instance part="GND48" gate="1" x="279.4" y="66.04"/>
+<instance part="U$8" gate="G$1" x="302.26" y="170.18"/>
 </instances>
 <busses>
 </busses>
@@ -6853,6 +6851,12 @@ Standard 3-pin 0.1" header. Use with straight break away headers (SKU : PRT-0011
 <junction x="332.74" y="104.14"/>
 <wire x1="332.74" y1="104.14" x2="350.52" y2="104.14" width="0.1524" layer="91"/>
 </segment>
+<segment>
+<wire x1="307.34" y1="162.56" x2="302.26" y2="162.56" width="0.1524" layer="91"/>
+<wire x1="302.26" y1="162.56" x2="302.26" y2="170.18" width="0.1524" layer="91"/>
+<pinref part="GPS" gate="-5" pin="S"/>
+<pinref part="U$8" gate="G$1" pin="5V"/>
+</segment>
 </net>
 <net name="3.3V" class="0">
 <segment>
@@ -7046,12 +7050,6 @@ Standard 3-pin 0.1" header. Use with straight break away headers (SKU : PRT-0011
 <wire x1="256.54" y1="160.02" x2="256.54" y2="165.1" width="0.1524" layer="91"/>
 <pinref part="U$11" gate="G$1" pin="P$1"/>
 <junction x="269.24" y="160.02"/>
-</segment>
-<segment>
-<wire x1="307.34" y1="162.56" x2="302.26" y2="162.56" width="0.1524" layer="91"/>
-<wire x1="302.26" y1="162.56" x2="302.26" y2="170.18" width="0.1524" layer="91"/>
-<pinref part="GPS" gate="-5" pin="S"/>
-<pinref part="P+1" gate="1" pin="V+"/>
 </segment>
 <segment>
 <wire x1="147.32" y1="142.24" x2="162.56" y2="142.24" width="0.1524" layer="91"/>
