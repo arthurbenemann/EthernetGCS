@@ -2,6 +2,7 @@
 #include "TCPIP Stack/TCPIP.h"
 
 #include "Serial2TCP.h"
+#include "RC.h"
 
 // Declare AppConfig structure and some other supporting stack variables
 APP_CONFIG AppConfig;
@@ -10,22 +11,43 @@ APP_CONFIG AppConfig;
 // Private helper functions.
 static void InitStackConfig(void);
 static void InitializeBoard(void);
+void updateRC();
 
 
 /**
 * Main application entry point.
 */
 int main(void) {
+    
+
     InitializeBoard();
+    initRC();
     TickInit();
     InitStackConfig();
     StackInit();
     Serial2TCPInit();
 
+
     while (1) {
         StackTask();
         StackApplications();
         Serial2TCPTask();
+        updateRC();
+    }
+}
+
+
+/**
+ * Just a demo the moves the servos in oposite directions.
+ */
+void updateRC(){
+    static int i = 0;
+    static int delay =0;
+    if(delay-- <0){
+        delay = 10;
+    writeRC(RC_CH1,DEFAULT_SERVO_VALUE + i);
+        writeRC(RC_CH2,DEFAULT_SERVO_VALUE - i);
+        if(++i>400) i =-500;
     }
 }
 
@@ -47,9 +69,14 @@ static void InitializeBoard(void) {
     _SDI1R = ENC_SDO;
 
     // Configure UART2 PPS pins
-    _ODF5 = 1;  // Enable Open Drain on TX pin to supor 5V output
+    PIC_TX_OD = 1;  // Enable Open Drain on TX pin to suport 5V output
     PIC_TX = UART2;
     _U2RXR = PIC_RX;
+
+    // Configure Servo pins
+    RC1_OUT = OC5;
+    RC2_OUT = OC4;
+
 
     __builtin_write_OSCCONL(OSCCON | 0x40); // Lock PPS
 }

@@ -43,7 +43,19 @@
 #define UMODE				U2MODE
 #define USTA				U2STA
 
+// RC Servo Outputs
+#define RC1_OUT      _RP23R
+#define RC2_OUT      _RP22R
+
 // PPS definitions
 #define SCK1    8
 #define SDO1    7
 #define UART2   5
+#define OC1      18
+#define OC2      19
+#define OC3      20
+#define OC4      21
+#define OC5      22
+#define OC6      23
+#define OC7      24
+#define OC8      25

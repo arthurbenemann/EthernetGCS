@@ -38,6 +38,7 @@
       <itemPath>../HardwareProfile.h</itemPath>
       <itemPath>../TCPIPConfig.h</itemPath>
       <itemPath>../Serial2TCP.h</itemPath>
+      <itemPath>../RC.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LibraryFiles"
                    displayName="Library Files"
@@ -81,6 +82,7 @@
       <itemPath>../Serial2TCP.c</itemPath>
       <itemPath>../FusesAndExceptions.c</itemPath>
       <itemPath>../Main.c</itemPath>
+      <itemPath>../RC.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
