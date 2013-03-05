@@ -5442,33 +5442,6 @@ Standard 3-pin 0.1" header. Use with straight break away headers (SKU : PRT-0011
 </deviceset>
 </devicesets>
 </library>
-<library name="DIYdrones3">
-<packages>
-</packages>
-<symbols>
-<symbol name="VCC2">
-<wire x1="0.762" y1="1.27" x2="0" y2="2.54" width="0.254" layer="94"/>
-<wire x1="0" y1="2.54" x2="-0.762" y2="1.27" width="0.254" layer="94"/>
-<text x="-1.016" y="3.556" size="1.778" layer="96">&gt;VALUE</text>
-<pin name="VCC" x="0" y="0" visible="off" length="short" direction="sup" rot="R90"/>
-</symbol>
-</symbols>
-<devicesets>
-<deviceset name="VCC" prefix="P+">
-<description>&lt;b&gt;SUPPLY SYMBOL&lt;/b&gt;</description>
-<gates>
-<gate name="1" symbol="VCC2" x="0" y="0"/>
-</gates>
-<devices>
-<device name="">
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-</devices>
-</deviceset>
-</devicesets>
-</library>
 <library name="con-jst2">
 <packages>
 <package name="SM06B-SRSS-TB">
@@ -5714,7 +5687,7 @@ Standard 3-pin 0.1" header. Use with straight break away headers (SKU : PRT-0011
 <part name="P+13" library="supply2" deviceset="V+" device=""/>
 <part name="GPS" library="con-jst2" deviceset="?M06B-SRSS-TB" device="S"/>
 <part name="GND44" library="supply1" deviceset="GND" device=""/>
-<part name="P+40" library="DIYdrones3" deviceset="VCC" device=""/>
+<part name="P+1" library="supply2" deviceset="V+" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -5907,7 +5880,9 @@ Standard 3-pin 0.1" header. Use with straight break away headers (SKU : PRT-0011
 <instance part="GPS" gate="-5" x="302.26" y="78.74"/>
 <instance part="GPS" gate="-6" x="302.26" y="76.2"/>
 <instance part="GND44" gate="1" x="297.18" y="71.12"/>
-<instance part="P+40" gate="1" x="294.64" y="86.36"/>
+<instance part="P+1" gate="1" x="294.64" y="88.9" smashed="yes">
+<attribute name="VALUE" x="296.418" y="91.186" size="1.778" layer="96"/>
+</instance>
 </instances>
 <busses>
 </busses>
@@ -6336,6 +6311,12 @@ Standard 3-pin 0.1" header. Use with straight break away headers (SKU : PRT-0011
 <wire x1="228.6" y1="162.56" x2="223.52" y2="162.56" width="0.1524" layer="91"/>
 <pinref part="P+10" gate="1" pin="V+"/>
 </segment>
+<segment>
+<wire x1="299.72" y1="78.74" x2="294.64" y2="78.74" width="0.1524" layer="91"/>
+<wire x1="294.64" y1="78.74" x2="294.64" y2="86.36" width="0.1524" layer="91"/>
+<pinref part="GPS" gate="-5" pin="S"/>
+<pinref part="P+1" gate="1" pin="V+"/>
+</segment>
 </net>
 <net name="N$13" class="0">
 <segment>
@@ -6654,14 +6635,6 @@ Standard 3-pin 0.1" header. Use with straight break away headers (SKU : PRT-0011
 <pinref part="IC4" gate="G$1" pin="VDDCORE"/>
 <wire x1="154.94" y1="152.4" x2="162.56" y2="152.4" width="0.1524" layer="91"/>
 <pinref part="C6" gate="G$1" pin="+"/>
-</segment>
-</net>
-<net name="VCC" class="0">
-<segment>
-<wire x1="299.72" y1="78.74" x2="294.64" y2="78.74" width="0.1524" layer="91"/>
-<wire x1="294.64" y1="78.74" x2="294.64" y2="86.36" width="0.1524" layer="91"/>
-<pinref part="GPS" gate="-5" pin="S"/>
-<pinref part="P+40" gate="1" pin="VCC"/>
 </segment>
 </net>
 <net name="PD3" class="0">
